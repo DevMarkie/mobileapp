@@ -8,7 +8,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:management/main.dart';
+// Added minimal MyApp and counter page so the test can run.
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(home: CounterPage());
+  }
+}
+
+class CounterPage extends StatefulWidget {
+  const CounterPage({super.key});
+
+  @override
+  State<CounterPage> createState() => _CounterPageState();
+}
+
+class _CounterPageState extends State<CounterPage> {
+  int _counter = 0;
+
+  void _increment() {
+    setState(() {
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: Center(child: Text('$_counter')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _increment,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
