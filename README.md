@@ -116,14 +116,6 @@ Không dùng Firebase? Có thể giữ file mặc định (không ảnh hưởng
 
 ## Troubleshooting nhanh
 
-- Lỗi Git/rebase, không push được:
-
-  ```powershell
-  git status
-  git rebase --continue   # hoặc git rebase --abort
-  git push origin main --force-with-lease
-  ```
-
 - Thiếu cấu hình Firebase:
 
   - Tải `google-services.json` / `GoogleService-Info.plist` từ Firebase Console và đặt đúng vị trí.
@@ -131,12 +123,4 @@ Không dùng Firebase? Có thể giữ file mặc định (không ảnh hưởng
 - iOS codesign fail:
   - Mở `ios/Runner.xcworkspace` trong Xcode, cấu hình Team, Bundle ID, Signing.
 
-## Đóng góp
 
-1. Tạo nhánh mới từ `main`
-2. Code + `dart format .` + `flutter analyze`
-3. Commit message rõ ràng, mở Pull Request
-
-## Giấy phép
-
-Dùng cho mục đích học tập/demo. Thêm license nếu bạn muốn phát hành.
