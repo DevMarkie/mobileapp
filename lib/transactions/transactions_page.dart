@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+import '../l10n/app_strings.dart';
+
 class TransactionsPage extends StatelessWidget {
   const TransactionsPage({super.key});
 
@@ -41,12 +44,12 @@ class TransactionsPage extends StatelessWidget {
                             Icons.arrow_back_ios_new,
                             color: Colors.white,
                           ),
-                          onPressed: () => Navigator.of(context).pop(),
+                          onPressed: () => Navigator.of(context).maybePop(),
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Transactions',
-                          style: TextStyle(
+                        Text(
+                          context.loc(AppStrings.transactionsTitle),
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
@@ -63,14 +66,14 @@ class TransactionsPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        SizedBox(height: 6),
+                      children: [
+                        const SizedBox(height: 6),
                         Text(
-                          'Your total expenses',
-                          style: TextStyle(color: Colors.white70),
+                          context.loc(AppStrings.transactionsTotalExpenses),
+                          style: const TextStyle(color: Colors.white70),
                         ),
-                        SizedBox(height: 8),
-                        Text(
+                        const SizedBox(height: 8),
+                        const Text(
                           '\$2500',
                           style: TextStyle(
                             color: Colors.white,
@@ -103,13 +106,13 @@ class TransactionsPage extends StatelessWidget {
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: Row(
-                          children: const [
-                            Icon(Icons.search, color: Colors.white70),
-                            SizedBox(width: 8),
+                          children: [
+                            const Icon(Icons.search, color: Colors.white70),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Search',
-                                style: TextStyle(color: Colors.white70),
+                                context.loc(AppStrings.transactionsSearchHint),
+                                style: const TextStyle(color: Colors.white70),
                               ),
                             ),
                           ],
@@ -126,31 +129,31 @@ class TransactionsPage extends StatelessWidget {
                   delegate: SliverChildListDelegate([
                     const _TxnTile(
                       color: Color(0xFFFFC085),
-                      title: 'Shopping',
+                      titleKey: AppStrings.cardsTxnShopping,
                       subtitle: '17 Aug 2020, 9:12 AM',
                       amount: -300,
                     ),
                     const _TxnTile(
                       color: Color(0xFF6EE7F2),
-                      title: 'Medicine',
+                      titleKey: AppStrings.cardsTxnMedicine,
                       subtitle: '5 May 2020, 4:12 PM',
                       amount: -120,
                     ),
                     const _TxnTile(
                       color: Color(0xFFFF9F7A),
-                      title: 'Sport',
+                      titleKey: AppStrings.cardsTxnSport,
                       subtitle: '22 May 2020, 4:22 AM',
                       amount: -70,
                     ),
                     const _TxnTile(
                       color: Color(0xFFFFC085),
-                      title: 'Travel',
+                      titleKey: AppStrings.transactionsTxnTravel,
                       subtitle: '19 June 2020, 3:00 AM',
                       amount: -800,
                     ),
                     const _TxnTile(
                       color: Color(0xFF6EE7F2),
-                      title: 'Medicine',
+                      titleKey: AppStrings.cardsTxnMedicine,
                       subtitle: '14 Aug 2020, 8:00 AM',
                       amount: -160,
                     ),
@@ -169,13 +172,13 @@ class TransactionsPage extends StatelessWidget {
 class _TxnTile extends StatelessWidget {
   const _TxnTile({
     required this.color,
-    required this.title,
+    required this.titleKey,
     required this.subtitle,
     required this.amount,
   });
 
   final Color color;
-  final String title;
+  final String titleKey;
   final String subtitle;
   final double amount;
 
@@ -211,7 +214,7 @@ class _TxnTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    context.loc(titleKey),
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       color: Colors.black87,

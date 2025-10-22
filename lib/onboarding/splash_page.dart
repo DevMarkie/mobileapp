@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+import '../l10n/app_strings.dart';
+
 /// Simple splash screen that shows the launch logo and
 /// automatically navigates to onboarding after 10 seconds.
 class SplashPage extends StatefulWidget {
@@ -47,9 +50,9 @@ class _Logo extends StatelessWidget {
       children: [
         Image.asset('lib/theme/Launch-Screen.png', height: 72),
         const SizedBox(height: 8),
-        const Text(
-          'MONEY',
-          style: TextStyle(
+        Text(
+          context.loc(AppStrings.splashTagline),
+          style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: Color(0xFF6B7280),

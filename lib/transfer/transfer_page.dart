@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+import '../l10n/app_strings.dart';
+
 class TransferPage extends StatefulWidget {
   const TransferPage({super.key});
 
@@ -66,12 +69,12 @@ class _TransferPageState extends State<TransferPage> {
                           Icons.arrow_back_ios_new,
                           color: Colors.white,
                         ),
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () => Navigator.of(context).maybePop(),
                       ),
                       const SizedBox(width: 8),
-                      const Text(
-                        'Transfer',
-                        style: TextStyle(
+                      Text(
+                        context.loc(AppStrings.transferTitle),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
@@ -81,10 +84,10 @@ class _TransferPageState extends State<TransferPage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Center(
+                Center(
                   child: Text(
-                    'Enter Amount',
-                    style: TextStyle(color: Colors.white70),
+                    context.loc(AppStrings.transferAmountHint),
+                    style: const TextStyle(color: Colors.white70),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -124,7 +127,10 @@ class _TransferPageState extends State<TransferPage> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Text('To', style: TextStyle(color: Colors.white70)),
+                      Text(
+                        context.loc(AppStrings.transferRecipientLabel),
+                        style: const TextStyle(color: Colors.white70),
+                      ),
                       const SizedBox(width: 8),
                       const Text(
                         'Rose Addison',

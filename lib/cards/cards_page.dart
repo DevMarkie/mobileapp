@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+import '../l10n/app_strings.dart';
+
 class CardsPage extends StatelessWidget {
   const CardsPage({super.key});
 
@@ -42,12 +45,12 @@ class CardsPage extends StatelessWidget {
                             Icons.arrow_back_ios_new,
                             color: Colors.white,
                           ),
-                          onPressed: () => Navigator.of(context).pop(),
+                          onPressed: () => Navigator.of(context).maybePop(),
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Cards',
-                          style: TextStyle(
+                        Text(
+                          context.loc(AppStrings.cardsPageTitle),
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
@@ -62,9 +65,9 @@ class CardsPage extends StatelessWidget {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: const Text(
-                      'You can check\nYour cards here',
-                      style: TextStyle(
+                    child: Text(
+                      context.loc(AppStrings.cardsIntro),
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
@@ -82,17 +85,17 @@ class CardsPage extends StatelessWidget {
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.only(left: 20),
-                      children: const [
+                      children: [
                         _GlassCard(
                           balance: 4500,
-                          label: 'Company',
+                          label: context.loc(AppStrings.cardsLabelCompany),
                           gradient: [Color(0xFF8EC5FC), Color(0xFFE0C3FC)],
                           brandAsset: null,
                         ),
-                        SizedBox(width: 16),
+                        const SizedBox(width: 16),
                         _GlassCard(
                           balance: 4000,
-                          label: 'Home',
+                          label: context.loc(AppStrings.cardsLabelHome),
                           gradient: [Color(0xFFF6D365), Color(0xFFFDA085)],
                           brandAsset: null,
                         ),
@@ -108,10 +111,10 @@ class CardsPage extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
-                      children: const [
+                      children: [
                         Text(
-                          'Recent Transactions',
-                          style: TextStyle(
+                          context.loc(AppStrings.homeRecentTransactions),
+                          style: const TextStyle(
                             color: Colors.black87,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -128,19 +131,19 @@ class CardsPage extends StatelessWidget {
                     const SizedBox(height: 12),
                     const _TxnTile(
                       color: Color(0xFFFFC085),
-                      title: 'Shopping',
+                      titleKey: AppStrings.cardsTxnShopping,
                       subtitle: '19 Apr 2020, 9:12 AM',
                       amount: -300,
                     ),
                     const _TxnTile(
                       color: Color(0xFF6EE7F2),
-                      title: 'Medicine',
+                      titleKey: AppStrings.cardsTxnMedicine,
                       subtitle: '20 May 2020, 4:20 PM',
                       amount: -120,
                     ),
                     const _TxnTile(
                       color: Color(0xFFFF9F7A),
-                      title: 'Sport',
+                      titleKey: AppStrings.cardsTxnSport,
                       subtitle: '22 May 2020, 4:22 AM',
                       amount: -70,
                     ),
@@ -247,13 +250,13 @@ class _GlassCard extends StatelessWidget {
 class _TxnTile extends StatelessWidget {
   const _TxnTile({
     required this.color,
-    required this.title,
+    required this.titleKey,
     required this.subtitle,
     required this.amount,
   });
 
   final Color color;
-  final String title;
+  final String titleKey;
   final String subtitle;
   final double amount;
 
@@ -284,7 +287,7 @@ class _TxnTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  context.loc(titleKey),
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     color: Colors.black87,

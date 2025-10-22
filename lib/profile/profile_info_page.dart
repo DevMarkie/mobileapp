@@ -1,6 +1,27 @@
 import 'package:flutter/material.dart';
+
 import '../auth/auth_service.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/app_strings.dart';
 import 'profile_store.dart';
+
+List<String> _splitNameTokens(String source) {
+  return source
+      .split(RegExp(r"[\s_\.-]+"))
+      .where((segment) => segment.trim().isNotEmpty)
+      .toList();
+}
+
+String _capitalizeToken(String value) {
+  if (value.isEmpty) return value;
+  return value.substring(0, 1).toUpperCase() + value.substring(1).toLowerCase();
+}
+
+String _normalizeField(dynamic value) {
+  final raw = (value ?? '').toString().trim();
+  if (raw.toLowerCase() == 'null') return '';
+  return raw;
+}
 
 class ProfileInfoPage extends StatefulWidget {
   const ProfileInfoPage({super.key});
@@ -18,44 +39,76 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
   @override
   void initState() {
     super.initState();
-    final user = AuthService.currentUser;
-    // Prefill from current user/displayName/email before async load
-    if (user != null) {
-      final email = user.email ?? '';
-      final emailName = email.contains('@') ? email.split('@').first : email;
-      String display = (user.displayName ?? '').trim();
-      if (display.isEmpty) display = emailName;
-      username = display;
-      // Try to infer first/last name from display or email tokens
-      List<String> tokens = display
-          .split(RegExp(r"[\s_\.-]+"))
-          .where((t) => t.trim().isNotEmpty)
-          .toList();
-      if (tokens.isEmpty && emailName.isNotEmpty) {
-        tokens = emailName
-            .split(RegExp(r"[\s_\.-]+"))
-            .where((t) => t.trim().isNotEmpty)
-            .toList();
-      }
-      String cap(String s) => s.isEmpty
-          ? s
-          : s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
-      if (tokens.isNotEmpty && firstName.isEmpty) firstName = cap(tokens[0]);
-      if (tokens.length > 1 && lastName.isEmpty) lastName = cap(tokens[1]);
+    _prefillFromAuthUser();
+    _loadProfileFromStore();
+  }
 
-      ProfileStore.getProfile(user.uid)
-          .then((data) {
-            if (!mounted) return;
-            setState(() {
-              username = (data?['username'] ?? user.displayName ?? username)
-                  .toString();
-              firstName = (data?['firstName'] ?? firstName).toString();
-              lastName = (data?['lastName'] ?? lastName).toString();
-              dob = (data?['dob'] ?? dob).toString();
-            });
-          })
-          .catchError((_) {});
+  void _prefillFromAuthUser() {
+    final user = AuthService.currentUser;
+    if (user == null) return;
+    final email = user.email ?? '';
+    final emailName = email.contains('@') ? email.split('@').first : email;
+    String display = (user.displayName ?? '').trim();
+    if (display.isEmpty) display = emailName;
+    username = display.isNotEmpty ? display : emailName;
+
+    var tokens = _splitNameTokens(display);
+    if (tokens.isEmpty && emailName.isNotEmpty) {
+      tokens = _splitNameTokens(emailName);
     }
+    if (tokens.isNotEmpty && firstName.isEmpty) {
+      firstName = _capitalizeToken(tokens[0]);
+    }
+    if (tokens.length > 1 && lastName.isEmpty) {
+      lastName = _capitalizeToken(tokens[1]);
+    }
+  }
+
+  Future<void> _loadProfileFromStore() async {
+    final user = AuthService.currentUser;
+    if (user == null) return;
+    try {
+      final data = await ProfileStore.getProfile(user.uid);
+      if (!mounted || data == null) return;
+      setState(() {
+        final fetchedUsername = _normalizeField(data['username']);
+        final fetchedFirst = _normalizeField(data['firstName']);
+        final fetchedLast = _normalizeField(data['lastName']);
+        final fetchedDob = _normalizeField(data['dob']);
+
+        if (fetchedUsername.isNotEmpty) {
+          username = fetchedUsername;
+        }
+        if (fetchedFirst.isNotEmpty) {
+          firstName = fetchedFirst;
+        }
+        if (fetchedLast.isNotEmpty) {
+          lastName = fetchedLast;
+        }
+        if (fetchedDob.isNotEmpty) {
+          dob = fetchedDob;
+        }
+      });
+    } catch (_) {
+      // Ignore cache or network issues and keep existing state.
+    }
+  }
+
+  void _handleEditProfile() {
+    Navigator.of(context)
+        .pushNamed('/profile')
+        .then((updated) async {
+          if (updated == true) {
+            _prefillFromAuthUser();
+            if (mounted) setState(() {});
+            await _loadProfileFromStore();
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(context.loc(AppStrings.profileSaved))),
+            );
+          }
+        })
+        .catchError((_) {});
   }
 
   @override
@@ -64,9 +117,10 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
     final headerH = size.height * 0.34;
     final email = AuthService.currentUser?.email ?? '';
     final emailName = email.contains('@') ? email.split('@').first : email;
+    final fallbackName = context.loc(AppStrings.profileInfoPlaceholderUser);
     final displayName = username.isNotEmpty
         ? username
-        : (emailName.isNotEmpty ? emailName : 'User');
+        : (emailName.isNotEmpty ? emailName : fallbackName);
     final initials = displayName.trim().split(RegExp(r"\s+|@")).first;
     return Scaffold(
       backgroundColor: Colors.white,
@@ -85,6 +139,8 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
             if (!mounted) return;
             navigator.pushNamedAndRemoveUntil('/welcome', (r) => false);
           },
+          onEditProfile: _handleEditProfile,
+          onBack: () => Navigator.of(context).maybePop(),
         ),
       ),
     );
@@ -101,6 +157,8 @@ class ProfileInfoBody extends StatelessWidget {
     required this.dob,
     required this.headerHeight,
     required this.onSignOut,
+    required this.onEditProfile,
+    this.onBack,
   });
 
   final String displayName;
@@ -110,6 +168,8 @@ class ProfileInfoBody extends StatelessWidget {
   final String dob;
   final double headerHeight;
   final VoidCallback onSignOut;
+  final VoidCallback onEditProfile;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -134,12 +194,24 @@ class ProfileInfoBody extends StatelessWidget {
             ),
             child: Stack(
               children: [
-                const Positioned(
+                if (onBack != null)
+                  Positioned(
+                    left: 8,
+                    top: 8,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: Colors.white,
+                      ),
+                      onPressed: onBack,
+                    ),
+                  ),
+                Positioned(
                   left: 24,
                   top: 24,
                   child: Text(
-                    'Profile',
-                    style: TextStyle(
+                    context.loc(AppStrings.profileInfoTitle),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 28,
                       fontWeight: FontWeight.w700,
@@ -180,16 +252,18 @@ class ProfileInfoBody extends StatelessWidget {
                               ),
                             ),
                             Row(
-                              children: const [
-                                Icon(
+                              children: [
+                                const Icon(
                                   Icons.circle,
                                   size: 8,
                                   color: Color(0xFF34D399),
                                 ),
-                                SizedBox(width: 6),
+                                const SizedBox(width: 6),
                                 Text(
-                                  'online',
-                                  style: TextStyle(color: Colors.white70),
+                                  context.loc(
+                                    AppStrings.profileInfoStatusOnline,
+                                  ),
+                                  style: const TextStyle(color: Colors.white70),
                                 ),
                               ],
                             ),
@@ -211,21 +285,32 @@ class ProfileInfoBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _InfoField(label: 'Username', value: displayName),
                 _InfoField(
-                  label: 'First Name',
+                  label: context.loc(AppStrings.profileUsernameLabel),
+                  value: displayName,
+                ),
+                _InfoField(
+                  label: context.loc(AppStrings.profileFirstNameLabel),
                   value: firstName.isNotEmpty ? firstName : '—',
                 ),
                 _InfoField(
-                  label: 'Last Name',
+                  label: context.loc(AppStrings.profileLastNameLabel),
                   value: lastName.isNotEmpty ? lastName : '—',
                 ),
                 _InfoField(
-                  label: 'Date of Birth',
+                  label: context.loc(AppStrings.profileDobLabel),
                   value: dob.isNotEmpty ? dob : '—',
                 ),
                 const SizedBox(height: 24),
-                _SignOutButton(onPressed: onSignOut),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _EditProfileButton(onPressed: onEditProfile),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(child: _SignOutButton(onPressed: onSignOut)),
+                  ],
+                ),
               ],
             ),
           ),
@@ -252,44 +337,76 @@ class _ProfileInfoTabState extends State<ProfileInfoTab> {
   @override
   void initState() {
     super.initState();
-    final user = AuthService.currentUser;
-    if (user != null) {
-      // Prefill from displayName/email
-      final email = user.email ?? '';
-      final emailName = email.contains('@') ? email.split('@').first : email;
-      String display = (user.displayName ?? '').trim();
-      if (display.isEmpty) display = emailName;
-      username = display;
-      List<String> tokens = display
-          .split(RegExp(r"[\s_\.-]+"))
-          .where((t) => t.trim().isNotEmpty)
-          .toList();
-      if (tokens.isEmpty && emailName.isNotEmpty) {
-        tokens = emailName
-            .split(RegExp(r"[\s_\.-]+"))
-            .where((t) => t.trim().isNotEmpty)
-            .toList();
-      }
-      String cap(String s) => s.isEmpty
-          ? s
-          : s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
-      if (tokens.isNotEmpty && firstName.isEmpty) firstName = cap(tokens[0]);
-      if (tokens.length > 1 && lastName.isEmpty) lastName = cap(tokens[1]);
+    _prefillFromAuthUser();
+    _loadProfileFromStore();
+  }
 
-      // Load from ProfileStore
-      ProfileStore.getProfile(user.uid)
-          .then((data) {
-            if (!mounted) return;
-            setState(() {
-              username = (data?['username'] ?? user.displayName ?? username)
-                  .toString();
-              firstName = (data?['firstName'] ?? firstName).toString();
-              lastName = (data?['lastName'] ?? lastName).toString();
-              dob = (data?['dob'] ?? dob).toString();
-            });
-          })
-          .catchError((_) {});
+  void _prefillFromAuthUser() {
+    final user = AuthService.currentUser;
+    if (user == null) return;
+    final email = user.email ?? '';
+    final emailName = email.contains('@') ? email.split('@').first : email;
+    String display = (user.displayName ?? '').trim();
+    if (display.isEmpty) display = emailName;
+    username = display.isNotEmpty ? display : emailName;
+
+    var tokens = _splitNameTokens(display);
+    if (tokens.isEmpty && emailName.isNotEmpty) {
+      tokens = _splitNameTokens(emailName);
     }
+    if (tokens.isNotEmpty && firstName.isEmpty) {
+      firstName = _capitalizeToken(tokens[0]);
+    }
+    if (tokens.length > 1 && lastName.isEmpty) {
+      lastName = _capitalizeToken(tokens[1]);
+    }
+  }
+
+  Future<void> _loadProfileFromStore() async {
+    final user = AuthService.currentUser;
+    if (user == null) return;
+    try {
+      final data = await ProfileStore.getProfile(user.uid);
+      if (!mounted || data == null) return;
+      setState(() {
+        final fetchedUsername = _normalizeField(data['username']);
+        final fetchedFirst = _normalizeField(data['firstName']);
+        final fetchedLast = _normalizeField(data['lastName']);
+        final fetchedDob = _normalizeField(data['dob']);
+
+        if (fetchedUsername.isNotEmpty) {
+          username = fetchedUsername;
+        }
+        if (fetchedFirst.isNotEmpty) {
+          firstName = fetchedFirst;
+        }
+        if (fetchedLast.isNotEmpty) {
+          lastName = fetchedLast;
+        }
+        if (fetchedDob.isNotEmpty) {
+          dob = fetchedDob;
+        }
+      });
+    } catch (_) {
+      // Ignore cache or network errors to keep existing UI data.
+    }
+  }
+
+  void _handleEditProfile() {
+    Navigator.of(context)
+        .pushNamed('/profile')
+        .then((updated) async {
+          if (updated == true) {
+            _prefillFromAuthUser();
+            if (mounted) setState(() {});
+            await _loadProfileFromStore();
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(context.loc(AppStrings.profileSaved))),
+            );
+          }
+        })
+        .catchError((_) {});
   }
 
   @override
@@ -298,9 +415,10 @@ class _ProfileInfoTabState extends State<ProfileInfoTab> {
     final headerH = size.height * 0.34;
     final email = AuthService.currentUser?.email ?? '';
     final emailName = email.contains('@') ? email.split('@').first : email;
+    final fallbackName = context.loc(AppStrings.profileInfoPlaceholderUser);
     final displayName = username.isNotEmpty
         ? username
-        : (emailName.isNotEmpty ? emailName : 'User');
+        : (emailName.isNotEmpty ? emailName : fallbackName);
     final initials = displayName.trim().isNotEmpty
         ? displayName.trim()[0].toUpperCase()
         : '?';
@@ -318,6 +436,7 @@ class _ProfileInfoTabState extends State<ProfileInfoTab> {
         if (!mounted) return;
         navigator.pushNamedAndRemoveUntil('/welcome', (r) => false);
       },
+      onEditProfile: _handleEditProfile,
     );
   }
 }
@@ -362,7 +481,6 @@ class _SignOutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 160,
       height: 48,
       child: OutlinedButton(
         onPressed: onPressed,
@@ -373,7 +491,30 @@ class _SignOutButton extends StatelessWidget {
           ),
           foregroundColor: const Color(0xFF0B2AA3),
         ),
-        child: const Text('Sign out'),
+        child: Text(context.loc(AppStrings.drawerSignOut)),
+      ),
+    );
+  }
+}
+
+class _EditProfileButton extends StatelessWidget {
+  const _EditProfileButton({required this.onPressed});
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 48,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF0B2AA3),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: Text(context.loc(AppStrings.profileInfoEditProfile)),
       ),
     );
   }

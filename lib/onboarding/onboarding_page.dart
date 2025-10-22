@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+import '../l10n/app_strings.dart';
+
 /// Monex onboarding flow with three slides.
 class MonexOnboarding extends StatefulWidget {
   const MonexOnboarding({super.key});
@@ -23,22 +26,21 @@ class _MonexOnboardingState extends State<MonexOnboarding> {
     final pages = <_OnboardingData>[
       _OnboardingData(
         imagePath: 'lib/theme/Page-1.png',
-        title: 'Save your money\nconveniently.',
-        subtitle: 'Get 5% cashback on every\ntransactions and spend it easily.',
-        buttonText: 'Next',
+        titleKey: AppStrings.onboardingSlide1Title,
+        subtitleKey: AppStrings.onboardingSlide1Subtitle,
+        buttonKey: AppStrings.onboardingNext,
       ),
       _OnboardingData(
         imagePath: 'lib/theme/Safety Box 1.png',
-        title: 'Secure your money for\nfree and get rewards.',
-        subtitle: 'Get the most secure payment\never app and enjoy it.',
-        buttonText: 'Next',
+        titleKey: AppStrings.onboardingSlide2Title,
+        subtitleKey: AppStrings.onboardingSlide2Subtitle,
+        buttonKey: AppStrings.onboardingNext,
       ),
       _OnboardingData(
         imagePath: 'lib/theme/Trading 1.png',
-        title: 'Enjoy Commission free\nand start trading.',
-        subtitle:
-            'Online investing has never been\neasier then it is right now.',
-        buttonText: 'Get Started',
+        titleKey: AppStrings.onboardingSlide3Title,
+        subtitleKey: AppStrings.onboardingSlide3Subtitle,
+        buttonKey: AppStrings.onboardingGetStarted,
       ),
     ];
 
@@ -67,7 +69,7 @@ class _MonexOnboardingState extends State<MonexOnboarding> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               child: _GradientButton(
-                text: pages[_index].buttonText,
+                text: context.loc(pages[_index].buttonKey),
                 onPressed: () async {
                   if (_index < pages.length - 1) {
                     _controller.nextPage(
@@ -113,7 +115,7 @@ class _OnboardingSlide extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              data.title,
+              context.loc(data.titleKey),
               style: theme.textTheme.headlineSmall?.copyWith(
                 color: const Color(0xFF0B2AA3), // deep blue like design
                 fontWeight: FontWeight.w700,
@@ -122,7 +124,7 @@ class _OnboardingSlide extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              data.subtitle,
+              context.loc(data.subtitleKey),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: const Color(0xFF6B7280), // gray
                 height: 1.5,
@@ -211,14 +213,14 @@ class _Dots extends StatelessWidget {
 
 class _OnboardingData {
   final String imagePath;
-  final String title;
-  final String subtitle;
-  final String buttonText;
+  final String titleKey;
+  final String subtitleKey;
+  final String buttonKey;
 
   const _OnboardingData({
     required this.imagePath,
-    required this.title,
-    required this.subtitle,
-    required this.buttonText,
+    required this.titleKey,
+    required this.subtitleKey,
+    required this.buttonKey,
   });
 }

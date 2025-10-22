@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../auth/auth_service.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/app_strings.dart';
 
 class HomeDrawer extends StatelessWidget {
   const HomeDrawer({super.key, required this.name, required this.email});
@@ -76,13 +79,13 @@ class HomeDrawer extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   children: [
-                    const _MenuItem(
+                    _MenuItem(
                       icon: Icons.payments_outlined,
-                      text: 'Payments',
+                      textKey: AppStrings.drawerPayments,
                     ),
                     _MenuItem(
                       icon: Icons.notifications_none,
-                      text: 'Notifications',
+                      textKey: AppStrings.drawerNotifications,
                       onTap: () {
                         Navigator.of(context).pop();
                         Navigator.of(context).pushNamed('/notifications');
@@ -90,7 +93,7 @@ class HomeDrawer extends StatelessWidget {
                     ),
                     _MenuItem(
                       icon: Icons.swap_horiz,
-                      text: 'Transactions',
+                      textKey: AppStrings.drawerTransactions,
                       onTap: () {
                         Navigator.of(context).pop();
                         Navigator.of(context).pushNamed('/transactions');
@@ -98,26 +101,34 @@ class HomeDrawer extends StatelessWidget {
                     ),
                     _MenuItem(
                       icon: Icons.credit_card,
-                      text: 'My Cards',
+                      textKey: AppStrings.drawerMyCards,
                       onTap: () {
                         Navigator.of(context).pop();
                         Navigator.of(context).pushNamed('/cards');
                       },
                     ),
-                    const _MenuItem(
+                    _MenuItem(
                       icon: Icons.local_offer_outlined,
-                      text: 'Promotions',
+                      textKey: AppStrings.drawerPromotions,
                     ),
-                    const _MenuItem(
+                    _MenuItem(
                       icon: Icons.savings_outlined,
-                      text: 'Savings',
+                      textKey: AppStrings.drawerSavings,
                     ),
                     _MenuItem(
                       icon: Icons.person_outline,
-                      text: 'Profile Info',
+                      textKey: AppStrings.drawerProfileInfo,
                       onTap: () {
                         Navigator.of(context).pop();
                         Navigator.of(context).pushNamed('/profileInfo');
+                      },
+                    ),
+                    _MenuItem(
+                      icon: Icons.settings_outlined,
+                      textKey: AppStrings.drawerSettings,
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pushNamed('/settings');
                       },
                     ),
                   ],
@@ -156,7 +167,7 @@ class HomeDrawer extends StatelessWidget {
                           fontWeight: FontWeight.w400,
                         ),
                       ),
-                      child: const Text('Sign out'),
+                      child: Text(context.loc(AppStrings.drawerSignOut)),
                     ),
                   ),
                 ),
@@ -170,9 +181,9 @@ class HomeDrawer extends StatelessWidget {
 }
 
 class _MenuItem extends StatelessWidget {
-  const _MenuItem({required this.icon, required this.text, this.onTap});
+  const _MenuItem({required this.icon, required this.textKey, this.onTap});
   final IconData icon;
-  final String text;
+  final String textKey;
   final VoidCallback? onTap;
 
   @override
@@ -180,7 +191,7 @@ class _MenuItem extends StatelessWidget {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF2F56F8)),
       title: Text(
-        text,
+        context.loc(textKey),
         style: const TextStyle(
           color: Color(0xFF2F56F8),
           fontSize: 15,

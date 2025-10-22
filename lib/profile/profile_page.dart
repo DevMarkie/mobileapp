@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../auth/auth_service.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/app_strings.dart';
 import 'profile_store.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -65,21 +68,40 @@ class _ProfilePageState extends State<ProfilePage> {
           // ProfileStore already caches locally on failure, just show info
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Saved locally (offline): $e')),
+              SnackBar(
+                content: Text(
+                  context.loc(
+                    AppStrings.profileSaveLocalFallback,
+                    params: {'error': e.toString()},
+                  ),
+                ),
+              ),
             );
           }
         }
       }
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Profile saved')));
-      Navigator.of(context).pushNamedAndRemoveUntil('/home', (r) => false);
+      final navigator = Navigator.of(context);
+      if (navigator.canPop()) {
+        navigator.pop(true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.loc(AppStrings.profileSaved))),
+        );
+        navigator.pushNamedAndRemoveUntil('/home', (r) => false);
+      }
     } on Object catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Save failed: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.loc(
+              AppStrings.profileSaveFailed,
+              params: {'error': e.toString()},
+            ),
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -131,19 +153,19 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: const EdgeInsets.only(bottom: 16.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Text(
-                              'Complete your profile',
-                              style: TextStyle(
+                              context.loc(AppStrings.profileHeaderTitle),
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 22,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
-                            SizedBox(height: 6),
+                            const SizedBox(height: 6),
                             Text(
-                              'Just some info, no photo needed',
-                              style: TextStyle(
+                              context.loc(AppStrings.profileHeaderSubtitle),
+                              style: const TextStyle(
                                 color: Colors.white70,
                                 fontSize: 14,
                               ),
@@ -165,29 +187,29 @@ class _ProfilePageState extends State<ProfilePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _LabeledField(
-                        label: 'Username',
-                        hint: 'Your username',
+                        label: context.loc(AppStrings.profileUsernameLabel),
+                        hint: context.loc(AppStrings.profileUsernameHint),
                         controller: _usernameCtrl,
                         valid: _validUsername,
                         onChanged: (_) => setState(() {}),
                       ),
                       _LabeledField(
-                        label: 'First Name',
-                        hint: 'Your name',
+                        label: context.loc(AppStrings.profileFirstNameLabel),
+                        hint: context.loc(AppStrings.profileFirstNameHint),
                         controller: _firstCtrl,
                         valid: _validFirst,
                         onChanged: (_) => setState(() {}),
                       ),
                       _LabeledField(
-                        label: 'Last Name',
-                        hint: 'Your last name',
+                        label: context.loc(AppStrings.profileLastNameLabel),
+                        hint: context.loc(AppStrings.profileLastNameHint),
                         controller: _lastCtrl,
                         valid: _validLast,
                         onChanged: (_) => setState(() {}),
                       ),
                       _LabeledField(
-                        label: 'Date of Birth',
-                        hint: 'Your Birthday(dd-mm-yyyy)',
+                        label: context.loc(AppStrings.profileDobLabel),
+                        hint: context.loc(AppStrings.profileDobHint),
                         controller: _dobCtrl,
                         valid: _validDob,
                         onChanged: (_) => setState(() {}),
@@ -313,16 +335,16 @@ class _CompleteButton extends StatelessWidget {
                 onTap: enabled ? onPressed : null,
                 child: Stack(
                   alignment: Alignment.center,
-                  children: const [
+                  children: [
                     Text(
-                      'Complete',
-                      style: TextStyle(
+                      context.loc(AppStrings.profileCompleteButton),
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                         fontSize: 18,
                       ),
                     ),
-                    Positioned(
+                    const Positioned(
                       right: 20,
                       child: Icon(Icons.check_box, color: Colors.white),
                     ),

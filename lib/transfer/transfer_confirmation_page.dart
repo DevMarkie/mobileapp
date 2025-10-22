@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+import '../l10n/app_strings.dart';
+
 class TransferConfirmationPage extends StatelessWidget {
   const TransferConfirmationPage({
     super.key,
@@ -12,6 +15,8 @@ class TransferConfirmationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final amountText = '\$ $amount';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       body: SafeArea(
@@ -40,12 +45,12 @@ class TransferConfirmationPage extends StatelessWidget {
                       Icons.arrow_back_ios_new,
                       color: Colors.white,
                     ),
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () => Navigator.of(context).maybePop(),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
-                    'Transaction',
-                    style: TextStyle(
+                  Text(
+                    context.loc(AppStrings.transferConfirmationTitle),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -65,23 +70,30 @@ class TransferConfirmationPage extends StatelessWidget {
                 const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
+                  child: Text.rich(
+                    TextSpan(
                       style: const TextStyle(
                         color: Colors.black87,
                         fontSize: 16,
                       ),
                       children: [
-                        const TextSpan(text: 'You have successfully sent '),
                         TextSpan(
-                          text: '4 $amount ',
+                          text: context.loc(
+                            AppStrings.transferConfirmationMessagePrefix,
+                          ),
+                        ),
+                        TextSpan(
+                          text: amountText,
                           style: const TextStyle(
                             color: Color(0xFF1433FF),
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const TextSpan(text: 'to '),
+                        TextSpan(
+                          text: context.loc(
+                            AppStrings.transferConfirmationMessageTo,
+                          ),
+                        ),
                         TextSpan(
                           text: to,
                           style: const TextStyle(
@@ -91,6 +103,7 @@ class TransferConfirmationPage extends StatelessWidget {
                         ),
                       ],
                     ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -115,9 +128,11 @@ class TransferConfirmationPage extends StatelessWidget {
                       ),
                       child: TextButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        child: const Text(
-                          'Execute Again',
-                          style: TextStyle(
+                        child: Text(
+                          context.loc(
+                            AppStrings.transferConfirmationExecuteAgain,
+                          ),
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
                           ),
@@ -140,7 +155,9 @@ class TransferConfirmationPage extends StatelessWidget {
                         side: const BorderSide(color: Colors.black26),
                       ),
                       onPressed: () => Navigator.of(context).maybePop(),
-                      child: const Text('Confirmation'),
+                      child: Text(
+                        context.loc(AppStrings.transferConfirmationViewDetails),
+                      ),
                     ),
                   ),
                 ),

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+
 import '../auth/auth_service.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/app_strings.dart';
 import '../profile/profile_store.dart';
 import '../menu/home_drawer.dart';
 import '../notifications/notifications_page.dart';
+import '../cards/cards_page.dart';
 import '../profile/profile_info_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -16,17 +20,17 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   String? _nameOverride;
 
-  String _greeting() {
+  String _greeting(BuildContext context) {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good Morning';
-    if (hour < 18) return 'Good Afternoon';
-    return 'Good Evening';
+    if (hour < 12) return context.loc(AppStrings.homeGreetingMorning);
+    if (hour < 18) return context.loc(AppStrings.homeGreetingAfternoon);
+    return context.loc(AppStrings.homeGreetingEvening);
   }
 
   @override
   Widget build(BuildContext context) {
     final user = AuthService.currentUser;
-    final fallback = 'there';
+    final fallback = context.loc(AppStrings.homeGreetingFallback);
     final name =
         _nameOverride ??
         ((user?.displayName?.trim().isNotEmpty ?? false)
@@ -69,8 +73,9 @@ class _HomePageState extends State<HomePage> {
                               ].where((e) => e.isNotEmpty).join(' ').trim();
                         if (computed.isNotEmpty && mounted) {
                           WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (mounted)
+                            if (mounted) {
                               setState(() => _nameOverride = computed);
+                            }
                           });
                         }
                       }
@@ -113,7 +118,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        '${_greeting()},',
+                        '${_greeting(context)},',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -145,14 +150,8 @@ class _HomePageState extends State<HomePage> {
               padding: EdgeInsets.only(top: 0),
               child: NotificationsBody(),
             ),
-            // Wallet placeholder (keep existing style)
-            const Center(
-              child: Icon(
-                Icons.wallet_outlined,
-                size: 64,
-                color: Colors.black26,
-              ),
-            ),
+            // My Cards page
+            const CardsPage(),
             // Profile info inline (loads data)
             const ProfileInfoTab(),
           ],
@@ -164,7 +163,20 @@ class _HomePageState extends State<HomePage> {
         currentIndex: _selectedIndex,
         selectedItemColor: const Color(0xFF1433FF),
         unselectedItemColor: Colors.black38,
-        onTap: (i) => setState(() => _selectedIndex = i),
+        onTap: (i) {
+          // Handle MyCard tab (index 2): show a SnackBar and switch tab.
+          if (i == 2) {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(context.loc(AppStrings.homeMyCardsTabSelected)),
+                duration: const Duration(milliseconds: 900),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+          setState(() => _selectedIndex = i);
+        },
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard_outlined),
@@ -174,7 +186,11 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.notifications_none),
             label: '',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.wallet_outlined), label: ''),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.credit_card_outlined),
+            activeIcon: Icon(Icons.credit_card),
+            label: '',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: ''),
         ],
       ),
@@ -248,13 +264,13 @@ class _BalanceCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
+            children: [
               Text(
-                'Your total balance',
-                style: TextStyle(color: Colors.black54),
+                context.loc(AppStrings.homeTotalBalance),
+                style: const TextStyle(color: Colors.black54),
               ),
-              Spacer(),
-              Icon(Icons.more_horiz, color: Colors.black38),
+              const Spacer(),
+              const Icon(Icons.more_horiz, color: Colors.black38),
             ],
           ),
           const SizedBox(height: 10),
@@ -366,18 +382,18 @@ class _SecondaryCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(
-              children: const [
+              children: [
                 Expanded(
                   child: Text(
-                    'Check your bank\naccounts',
-                    style: TextStyle(
+                    context.loc(AppStrings.homeCheckAccounts),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios, color: Colors.white),
+                const Icon(Icons.arrow_forward_ios, color: Colors.white),
               ],
             ),
           ),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import '../l10n/app_localizations.dart';
+import '../l10n/app_strings.dart';
 import 'auth_service.dart';
 import '../profile/profile_store.dart';
 
@@ -31,9 +34,11 @@ class _SignUpPageState extends State<SignUpPage> {
     final pwd = _pwdCtrl.text;
     final pwd2 = _pwd2Ctrl.text;
     setState(() {
-      _emailError = _isValidEmail ? null : 'The email address is incomplete.';
+      _emailError = _isValidEmail
+          ? null
+          : context.loc(AppStrings.signInErrorInvalidEmail);
       _pwdError = (pwd.length < 6 || pwd != pwd2)
-          ? 'Password must be 6+ chars and match.'
+          ? context.loc(AppStrings.signUpPasswordError)
           : null;
     });
     if (_emailError != null || _pwdError != null) return;
@@ -64,7 +69,12 @@ class _SignUpPageState extends State<SignUpPage> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Unable to check profile, continue to profile: $e'),
+            content: Text(
+              context.loc(
+                AppStrings.signInErrorUnableProfile,
+                params: {'error': e.toString()},
+              ),
+            ),
           ),
         );
         if (!mounted) return;
@@ -73,14 +83,25 @@ class _SignUpPageState extends State<SignUpPage> {
     } on FirebaseAuthException catch (e) {
       final msg = e.message ?? e.code;
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Sign up failed: $msg')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.loc(AppStrings.signUpError, params: {'error': msg}),
+          ),
+        ),
+      );
     } on Object catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Sign up failed: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.loc(
+              AppStrings.signUpError,
+              params: {'error': e.toString()},
+            ),
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -137,12 +158,12 @@ class _SignUpPageState extends State<SignUpPage> {
                         height: 36,
                       ),
                     ),
-                    const Positioned(
+                    Positioned(
                       left: 24,
                       bottom: 24,
                       child: Text(
-                        'WELCOME\nBACK',
-                        style: TextStyle(
+                        context.loc(AppStrings.signInWelcome),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 30,
@@ -164,9 +185,9 @@ class _SignUpPageState extends State<SignUpPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 4),
-                    const Text(
-                      'SIGN-UP',
-                      style: TextStyle(
+                    Text(
+                      context.loc(AppStrings.signUpTitle),
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFF1F2937),
@@ -174,16 +195,19 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
                     const SizedBox(height: 22),
-                    const Text(
-                      'Email address',
-                      style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                    Text(
+                      context.loc(AppStrings.authEmailLabel),
+                      style: const TextStyle(
+                        color: Color(0xFF9CA3AF),
+                        fontSize: 14,
+                      ),
                     ),
                     TextField(
                       controller: _emailCtrl,
                       keyboardType: TextInputType.emailAddress,
                       onChanged: (_) => setState(() {}),
                       decoration: InputDecoration(
-                        hintText: '.....@gmail.com',
+                        hintText: context.loc(AppStrings.authEmailHint),
                         hintStyle: const TextStyle(color: Color(0xFF6B7280)),
                         enabledBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(
@@ -204,15 +228,18 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    const Text(
-                      'Password',
-                      style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                    Text(
+                      context.loc(AppStrings.authPasswordLabel),
+                      style: const TextStyle(
+                        color: Color(0xFF9CA3AF),
+                        fontSize: 14,
+                      ),
                     ),
                     TextField(
                       controller: _pwdCtrl,
                       obscureText: _obscure1,
                       decoration: InputDecoration(
-                        hintText: '********',
+                        hintText: context.loc(AppStrings.authPasswordHint),
                         hintStyle: const TextStyle(color: Color(0xFF6B7280)),
                         enabledBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(
@@ -237,15 +264,20 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    const Text(
-                      'Confirm Password',
-                      style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                    Text(
+                      context.loc(AppStrings.signUpPasswordConfirm),
+                      style: const TextStyle(
+                        color: Color(0xFF9CA3AF),
+                        fontSize: 14,
+                      ),
                     ),
                     TextField(
                       controller: _pwd2Ctrl,
                       obscureText: _obscure2,
                       decoration: InputDecoration(
-                        hintText: '********',
+                        hintText: context.loc(
+                          AppStrings.signUpPasswordConfirmHint,
+                        ),
                         hintStyle: const TextStyle(color: Color(0xFF6B7280)),
                         enabledBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(
@@ -272,7 +304,9 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     const SizedBox(height: 24),
                     _PrimaryGradientButton(
-                      text: _loading ? 'Creating account...' : 'Sign Up',
+                      text: _loading
+                          ? context.loc(AppStrings.signUpLoading)
+                          : context.loc(AppStrings.signUpButton),
                       onPressed: _loading ? null : _submit,
                     ),
                   ],
@@ -326,17 +360,17 @@ class _PrimaryGradientButton extends StatelessWidget {
             onTap: onPressed,
             child: Stack(
               alignment: Alignment.center,
-              children: const [
+              children: [
                 Text(
-                  'Sign Up',
-                  style: TextStyle(
+                  text,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
                     fontSize: 18,
                     letterSpacing: 0.2,
                   ),
                 ),
-                Positioned(
+                const Positioned(
                   right: 20,
                   child: Icon(Icons.arrow_right_alt, color: Colors.white),
                 ),

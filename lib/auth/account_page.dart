@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../l10n/app_localizations.dart';
+import '../l10n/app_strings.dart';
 import 'auth_service.dart';
 
 class AccountPage extends StatefulWidget {
@@ -21,9 +24,16 @@ class _AccountPageState extends State<AccountPage> {
       ).pushNamedAndRemoveUntil('/welcome', (route) => false);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Sign out failed: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.loc(
+              AppStrings.errorGeneric,
+              params: {'error': e.toString()},
+            ),
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -33,14 +43,14 @@ class _AccountPageState extends State<AccountPage> {
   Widget build(BuildContext context) {
     final user = AuthService.currentUser;
     return Scaffold(
-      appBar: AppBar(title: const Text('Account')),
+      appBar: AppBar(title: Text(context.loc(AppStrings.accountAppBar))),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              user?.email ?? 'Signed in',
+              user?.email ?? context.loc(AppStrings.accountSignedIn),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 24),
@@ -54,7 +64,7 @@ class _AccountPageState extends State<AccountPage> {
                         height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Sign Out'),
+                    : Text(context.loc(AppStrings.drawerSignOut)),
               ),
             ),
           ],

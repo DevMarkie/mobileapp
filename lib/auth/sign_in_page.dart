@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import '../l10n/app_localizations.dart';
+import '../l10n/app_strings.dart';
 import 'auth_service.dart';
 import '../profile/profile_store.dart';
 
@@ -34,7 +37,9 @@ class _SignInPageState extends State<SignInPage> {
     final email = _emailCtrl.text.trim();
     final pwd = _pwdCtrl.text;
     setState(() {
-      _emailError = _isValidEmail ? null : 'The email address is incomplete.';
+      _emailError = _isValidEmail
+          ? null
+          : context.loc(AppStrings.signInErrorInvalidEmail);
     });
     if (_emailError != null || pwd.isEmpty) return;
     setState(() => _loading = true);
@@ -75,7 +80,12 @@ class _SignInPageState extends State<SignInPage> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Unable to check profile, continue to profile: $e'),
+            content: Text(
+              context.loc(
+                AppStrings.signInErrorUnableProfile,
+                params: {'error': e.toString()},
+              ),
+            ),
           ),
         );
         Navigator.of(
@@ -85,14 +95,28 @@ class _SignInPageState extends State<SignInPage> {
     } on FirebaseAuthException catch (e) {
       final msg = e.message ?? e.code;
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Sign in failed: $msg')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.loc(
+              AppStrings.signInErrorFailedWithMessage,
+              params: {'message': msg},
+            ),
+          ),
+        ),
+      );
     } on Object catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Sign in failed: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.loc(
+              AppStrings.signInErrorFailed,
+              params: {'error': e.toString()},
+            ),
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -151,12 +175,12 @@ class _SignInPageState extends State<SignInPage> {
                         height: 36,
                       ),
                     ),
-                    const Positioned(
+                    Positioned(
                       left: 24,
                       bottom: 24,
                       child: Text(
-                        'WELCOME\nBACK',
-                        style: TextStyle(
+                        context.loc(AppStrings.signInWelcome),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 30,
@@ -180,9 +204,9 @@ class _SignInPageState extends State<SignInPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 4),
-                    const Text(
-                      'SIGN-IN',
-                      style: TextStyle(
+                    Text(
+                      context.loc(AppStrings.signInTitle),
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFF1F2937),
@@ -192,16 +216,19 @@ class _SignInPageState extends State<SignInPage> {
                     const SizedBox(height: 22),
 
                     // Email
-                    const Text(
-                      'Email address',
-                      style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                    Text(
+                      context.loc(AppStrings.authEmailLabel),
+                      style: const TextStyle(
+                        color: Color(0xFF9CA3AF),
+                        fontSize: 14,
+                      ),
                     ),
                     TextField(
                       controller: _emailCtrl,
                       keyboardType: TextInputType.emailAddress,
                       onChanged: (_) => setState(() {}),
                       decoration: InputDecoration(
-                        hintText: '.....@gmail.com',
+                        hintText: context.loc(AppStrings.authEmailHint),
                         hintStyle: const TextStyle(color: Color(0xFF6B7280)),
                         enabledBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(
@@ -224,15 +251,18 @@ class _SignInPageState extends State<SignInPage> {
                     const SizedBox(height: 18),
 
                     // Password
-                    const Text(
-                      'Password',
-                      style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                    Text(
+                      context.loc(AppStrings.authPasswordLabel),
+                      style: const TextStyle(
+                        color: Color(0xFF9CA3AF),
+                        fontSize: 14,
+                      ),
                     ),
                     TextField(
                       controller: _pwdCtrl,
                       obscureText: _obscure,
                       decoration: InputDecoration(
-                        hintText: '********',
+                        hintText: context.loc(AppStrings.authPasswordHint),
                         hintStyle: const TextStyle(color: Color(0xFF6B7280)),
                         enabledBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(
@@ -265,9 +295,9 @@ class _SignInPageState extends State<SignInPage> {
                       onPressed: () {
                         // TODO: forgot password
                       },
-                      child: const Text(
-                        'Forgot Password?',
-                        style: TextStyle(
+                      child: Text(
+                        context.loc(AppStrings.authForgotPassword),
+                        style: const TextStyle(
                           color: Color(0xFF6C8CFF),
                           fontSize: 14,
                         ),
@@ -278,7 +308,9 @@ class _SignInPageState extends State<SignInPage> {
 
                     // Sign In button
                     _PrimaryGradientButton(
-                      text: _loading ? 'Signing in...' : 'Sign In',
+                      text: _loading
+                          ? context.loc(AppStrings.signInLoading)
+                          : context.loc(AppStrings.signInButton),
                       onPressed: _loading ? null : () => _submit(),
                     ),
                   ],

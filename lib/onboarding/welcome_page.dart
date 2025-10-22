@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+import '../l10n/app_strings.dart';
+
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
 
@@ -61,12 +64,12 @@ class WelcomePage extends StatelessWidget {
                         height: 36,
                       ),
                     ),
-                    const Positioned(
+                    Positioned(
                       left: 24,
                       bottom: 32,
                       child: Text(
-                        'WELCOME\nBACK',
-                        style: TextStyle(
+                        context.loc(AppStrings.welcomeHeader),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 32,
@@ -86,14 +89,14 @@ class WelcomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _PrimaryGradientButton(
-                    text: 'Sign In',
+                    text: context.loc(AppStrings.welcomeSignIn),
                     onPressed: () {
                       Navigator.of(context).pushNamed('/signin');
                     },
                   ),
                   const SizedBox(height: 14),
                   _OutlinedPillButton(
-                    text: 'Sign Up',
+                    text: context.loc(AppStrings.welcomeSignUp),
                     onPressed: () {
                       Navigator.of(context).pushNamed('/signup');
                     },
