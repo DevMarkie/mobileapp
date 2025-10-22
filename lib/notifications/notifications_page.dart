@@ -58,10 +58,17 @@ class _NotificationsBodyState extends State<NotificationsBody> {
   List<_NotifItem> _filteredItems() {
     final trimmed = _query.trim().toLowerCase();
     if (trimmed.isEmpty) return _allItems;
+    final digitsOnly = trimmed.replaceAll(RegExp(r'[^0-9]'), '');
     return _allItems.where((item) {
       final nameMatch = item.name.toLowerCase().contains(trimmed);
-      final amountMatch = item.amount.toString().contains(trimmed);
-      return nameMatch || amountMatch;
+      final amountMatch = digitsOnly.isNotEmpty
+          ? item.amount.toString().contains(digitsOnly)
+          : false;
+      final messageMatch = item
+          .message(context)
+          .toLowerCase()
+          .contains(trimmed);
+      return nameMatch || amountMatch || messageMatch;
     }).toList();
   }
 
@@ -198,6 +205,13 @@ class _NotifItem {
   final int amount;
   final Color? color;
   const _NotifItem(this.name, this.amount, {this.color});
+
+  String message(BuildContext context) {
+    final amountText =
+        ' ${context.loc(AppStrings.notificationsActionSentYou)} '
+        '\$${amount.toString()}';
+    return '$name$amountText';
+  }
 }
 
 class _NotifTile extends StatelessWidget {

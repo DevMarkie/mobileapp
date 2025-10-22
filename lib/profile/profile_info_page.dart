@@ -23,6 +23,23 @@ String _normalizeField(dynamic value) {
   return raw;
 }
 
+String _buildInitials(String name) {
+  final cleaned = name.trim().split('@').first.trim();
+  if (cleaned.isEmpty) return '';
+  final parts = cleaned
+      .split(RegExp(r"\s+"))
+      .where((p) => p.isNotEmpty)
+      .toList();
+  if (parts.isEmpty) return cleaned[0].toUpperCase();
+  final buffer = StringBuffer();
+  buffer.write(parts.first[0].toUpperCase());
+  if (parts.length > 1) {
+    buffer.write(parts[1][0].toUpperCase());
+  }
+  final result = buffer.toString();
+  return result.isEmpty ? cleaned[0].toUpperCase() : result;
+}
+
 class ProfileInfoPage extends StatefulWidget {
   const ProfileInfoPage({super.key});
 
@@ -121,7 +138,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
     final displayName = username.isNotEmpty
         ? username
         : (emailName.isNotEmpty ? emailName : fallbackName);
-    final initials = displayName.trim().split(RegExp(r"\s+|@")).first;
+    final initials = _buildInitials(displayName);
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -192,24 +209,29 @@ class ProfileInfoBody extends StatelessWidget {
                 end: Alignment.bottomRight,
               ),
             ),
-            child: Stack(
-              children: [
-                if (onBack != null)
-                  Positioned(
-                    left: 8,
-                    top: 8,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back_ios_new,
-                        color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (onBack != null) ...[
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
                       ),
-                      onPressed: onBack,
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back_ios_new,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        onPressed: onBack,
+                      ),
                     ),
-                  ),
-                Positioned(
-                  left: 24,
-                  top: 24,
-                  child: Text(
+                    const SizedBox(height: 12),
+                  ],
+                  Text(
                     context.loc(AppStrings.profileInfoTitle),
                     style: const TextStyle(
                       color: Colors.white,
@@ -217,63 +239,54 @@ class ProfileInfoBody extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
-                Align(
-                  alignment: Alignment.bottomLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 18),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        CircleAvatar(
-                          radius: 26,
-                          backgroundColor: const Color(0xFF6789FF),
-                          child: Text(
-                            initials.isNotEmpty
-                                ? initials[0].toUpperCase()
-                                : '?',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 18,
-                            ),
+                  const Spacer(),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 26,
+                        backgroundColor: const Color(0xFF6789FF),
+                        child: Text(
+                          initials.isNotEmpty ? initials : '?',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 18,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              displayName,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            displayName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.circle,
+                                size: 8,
+                                color: Color(0xFF34D399),
                               ),
-                            ),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.circle,
-                                  size: 8,
-                                  color: Color(0xFF34D399),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  context.loc(
-                                    AppStrings.profileInfoStatusOnline,
-                                  ),
-                                  style: const TextStyle(color: Colors.white70),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                              const SizedBox(width: 6),
+                              Text(
+                                context.loc(AppStrings.profileInfoStatusOnline),
+                                style: const TextStyle(color: Colors.white70),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -419,9 +432,7 @@ class _ProfileInfoTabState extends State<ProfileInfoTab> {
     final displayName = username.isNotEmpty
         ? username
         : (emailName.isNotEmpty ? emailName : fallbackName);
-    final initials = displayName.trim().isNotEmpty
-        ? displayName.trim()[0].toUpperCase()
-        : '?';
+    final initials = _buildInitials(displayName);
 
     return ProfileInfoBody(
       displayName: displayName,

@@ -142,7 +142,17 @@ class _ProfilePageState extends State<ProfilePage> {
                       left: 8,
                       top: 8,
                       child: IconButton(
-                        onPressed: () => Navigator.of(context).maybePop(),
+                        onPressed: () {
+                          final navigator = Navigator.of(context);
+                          if (navigator.canPop()) {
+                            navigator.pop();
+                          } else {
+                            navigator.pushNamedAndRemoveUntil(
+                              '/home',
+                              (route) => false,
+                            );
+                          }
+                        },
                         color: Colors.white,
                         icon: const Icon(Icons.arrow_back),
                       ),
